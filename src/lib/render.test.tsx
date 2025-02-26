@@ -364,12 +364,12 @@ describe.only('renderAsync', () => {
   test('renders complex nested XML structure', async () => {
     const AsyncCompExample1 = async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
-      return <test>{'<special>content</special>'}</test>;
+      return <test>AsyncCompExample1</test>;
     };
 
     const AsyncCompExample2 = async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
-      return <test>This is item 1</test>;
+      return <test>AsyncCompExample2</test>;
     };
 
     let xml = (
@@ -396,19 +396,15 @@ describe.only('renderAsync', () => {
       "<root version="1.0">
         <test count="2">
           <item id="1">
-            <item>
-              First Item
-              <item id="2">
-                <item>
-                  Second Item
-                  <test>
-                    <test target="important" content="Important information"/>
-                  </test>
-                </item>
-              </item>
-            </item>
-            <test>&lt;special&gt;content&lt;/special&gt;</test>
-            <test>This is item 1</test>
+            <item>First Item</item>
+            <test>AsyncCompExample1</test>
+            <test>AsyncCompExample2</test>
+          </item>
+          <item id="2">
+            <item>Second Item</item>
+            <test>
+              <test target="important" content="Important information"/>
+            </test>
           </item>
         </test>
       </root>"

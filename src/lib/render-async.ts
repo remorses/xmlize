@@ -21,14 +21,16 @@ export async function renderAsync(
 
   const { Comment, CData, Ins } = createBuiltins(getCurrentElement);
 
-  function withElement(
+  async function withElement(
     cur: XMLBuilder,
     fn: () => void | Promise<void>,
   ): Promise<void> {
     elementsStack.push(cur);
-    return Promise.resolve(fn()).finally(() => {
+    try {
+      await fn();
+    } finally {
       elementsStack.pop();
-    });
+    }
   }
 
   function renderElement(
@@ -86,9 +88,11 @@ export async function renderAsync(
     } else if (typeof children === 'number') {
       cur.txt(children.toString());
     } else if (Array.isArray(children)) {
-      return Promise.all(children.map((child) => renderChildren(child))).then(
-        () => {},
-      );
+      let promise = Promise.resolve();
+      for (const child of children) {
+        promise = promise.then(() => renderChildren(child));
+      }
+      return promise;
     } else if (children) {
       return renderElement(children);
     }
