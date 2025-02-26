@@ -1,17 +1,20 @@
 import { describe, expect, test } from 'vitest';
 import { CData, Comment, Fragment, Ins, render } from '../index';
 import { Component } from 'react';
+import { renderAsync } from './render-async';
 
 declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      test: any;
-      item: any;
-      root: any;
-      'h:test': any;
-      'h:item': any;
-      'x:test': any;
-      'x:item': any;
+  namespace React {
+    namespace JSX {
+      interface IntrinsicElements {
+        test: any;
+        item: any;
+        root: any;
+        'h:test': any;
+        'h:item': any;
+        'x:test': any;
+        'x:item': any;
+      }
     }
   }
 }
@@ -330,5 +333,85 @@ describe('render', () => {
         `<test key="key" ref="ref" before="value" after="value"/>`,
       );
     });
+  });
+});
+
+describe.only('renderAsync', () => {
+  test('async components', async () => {
+    const AsyncComponent = async (props: { x: number }) => {
+      // Simulate async operation
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      return (
+        <item x={props.x}>
+          <item />
+        </item>
+      );
+    };
+
+    let xml = (
+      await renderAsync(
+        <root>
+          <AsyncComponent x={5} />
+        </root>,
+      )
+    ).end({ headless: true });
+
+    expect(xml).toMatchInlineSnapshot(
+      `"<root><item x="5"><item/></item></root>"`,
+    );
+  });
+
+  test('renders complex nested XML structure', async () => {
+    const AsyncCData = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      return <test>{'<special>content</special>'}</test>;
+    };
+
+    const AsyncComment = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      return <test>This is item 1</test>;
+    };
+
+    let xml = (
+      await renderAsync(
+        <root version="1.0">
+          <test count="2">
+            <item id="1">
+              <item>First Item</item>
+              <AsyncCData />
+              <AsyncComment />
+            </item>
+            <item id="2">
+              <item>Second Item</item>
+              <test>
+                <test target="important" content="Important information" />
+              </test>
+            </item>
+          </test>
+        </root>,
+      )
+    ).end({ headless: true, prettyPrint: true });
+
+    expect(xml).toMatchInlineSnapshot(`
+      "<root version="1.0">
+        <test count="2">
+          <item id="1">
+            <item>
+              First Item
+              <item id="2">
+                <item>
+                  Second Item
+                  <test>
+                    <test target="important" content="Important information"/>
+                  </test>
+                </item>
+              </item>
+            </item>
+            <test>&lt;special&gt;content&lt;/special&gt;</test>
+            <test>This is item 1</test>
+          </item>
+        </test>
+      </root>"
+    `);
   });
 });
