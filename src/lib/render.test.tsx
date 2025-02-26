@@ -486,6 +486,35 @@ describe('renderAsync', () => {
     `);
   });
 
+  test('should handle errors in async components', async () => {
+    const AsyncComponentThatThrows = async () => {
+      throw new Error('Async component error');
+    };
+
+    const WrapperComponent = async ({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) => {
+      return <div>{children}</div>;
+    };
+
+    function Component() {
+      return (
+        <root>
+          <test>
+            <WrapperComponent>
+              <AsyncComponentThatThrows />
+            </WrapperComponent>
+          </test>
+        </root>
+      );
+    }
+    await expect(renderAsync(<Component />)).rejects.toThrow(
+      'Async component error',
+    );
+  });
+
   test('should handle nested promises and potential node type issues', async () => {
     // This test verifies the renderer correctly handles node types when removing elements
     // and properly processes nested promises
