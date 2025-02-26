@@ -514,6 +514,28 @@ describe('renderAsync', () => {
       'Async component error',
     );
   });
+  test.only('should throw error for unsupported element type', async () => {
+    // Attempt to render an object which is not a valid React element
+    const invalidElement = {} as any;
+
+    function Throws() {
+      return <test>{invalidElement}</test>;
+    }
+
+    // Wrap the invalid element in a Component to test error propagation
+    function ComponentWrapper() {
+      return (
+        <root>
+          <test>
+            <Throws />
+          </test>
+        </root>
+      );
+    }
+    await expect(renderAsync(<ComponentWrapper />)).rejects.toThrow(
+      'Unsupported element type',
+    );
+  });
 
   test('should handle nested promises and potential node type issues', async () => {
     // This test verifies the renderer correctly handles node types when removing elements

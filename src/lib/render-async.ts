@@ -47,7 +47,7 @@ export async function renderAsync(
     } else if (isJsxXmlComponentElement(element)) {
       return renderComponentElement(element, stack);
     } else {
-      throw new Error('Unsupported element type');
+      throw new Error('Unsupported element type: ' + element);
     }
   }
 
