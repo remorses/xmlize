@@ -8,7 +8,7 @@ import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 
 import { ReactElement } from 'react';
 
-export async function renderAsync(
+export function renderAsync(
   element: ReactElement | JsxXmlElement,
   options?: XMLBuilderCreateOptions,
 ) {
@@ -18,36 +18,41 @@ export async function renderAsync(
     return elementsStack[elementsStack.length - 1];
   }
 
-  async function withElement(cur: XMLBuilder, fn: () => void | Promise<void>) {
-    try {
-      elementsStack.push(cur);
-      await fn();
-    } finally {
+  function withElement(
+    cur: XMLBuilder,
+    fn: () => void | Promise<void>,
+  ): Promise<void> {
+    elementsStack.push(cur);
+    return Promise.resolve(fn()).finally(() => {
       elementsStack.pop();
-    }
+    });
   }
 
-  async function renderElement(element: ReactElement | JsxXmlElement) {
+  function renderElement(
+    element: ReactElement | JsxXmlElement,
+  ): Promise<void> | void {
     if (element instanceof Promise) {
-      element = await element;
+      return element.then((resolved) => renderElement(resolved));
     }
+
     if (isElement(element)) {
-      await renderElement(reactElementToJsxXmlElement(element));
+      return renderElement(reactElementToJsxXmlElement(element));
     } else if (isJsxXmlTagElement(element)) {
-      await renderTagElement(element);
+      return renderTagElement(element);
     } else if (isJsxXmlComponentElement(element)) {
-      await renderComponentElement(element);
+      return renderComponentElement(element);
     } else {
-      throw new Error('Unsupported element type');
+      return Promise.reject(new Error('Unsupported element type'));
     }
   }
 
-  async function renderTagElement(element: any) {
+  function renderTagElement(element: any) {
     let cur = getCurrentElement();
     cur = cur.ele(element.type);
     renderAttrs(cur, element.attrs);
+
     if (element.children) {
-      await withElement(cur, () => renderChildren(element.children));
+      return withElement(cur, () => renderChildren(element.children));
     }
   }
 
@@ -57,25 +62,26 @@ export async function renderAsync(
     }
   }
 
-  async function renderComponentElement(element: any) {
-    await renderChildren(element.type(element.props));
+  function renderComponentElement(element: any) {
+    return renderChildren(element.type(element.props));
   }
 
-  async function renderChildren(children: any) {
+  function renderChildren(children: any): Promise<void> | void {
     const cur = getCurrentElement();
+
     if (typeof children === 'string') {
       cur.txt(children);
     } else if (typeof children === 'number') {
       cur.txt(children.toString());
     } else if (Array.isArray(children)) {
-      await Promise.all(children.map((child) => renderChildren(child)));
+      return Promise.all(children.map((child) => renderChildren(child))).then(
+        () => {},
+      );
     } else if (children) {
-      await renderElement(children);
+      return renderElement(children);
     }
   }
+
   let cur = create(options ?? {});
-
-  await withElement(cur, () => renderElement(element));
-
-  return cur;
+  return withElement(cur, () => renderElement(element)).then(() => cur);
 }
