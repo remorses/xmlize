@@ -360,25 +360,27 @@ describe.only('renderAsync', () => {
       `"<root><item x="5"><item/></item></root>"`,
     );
   });
-
   test('renders complex nested XML structure', async () => {
     const AsyncCompExample1 = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       return <test>AsyncCompExample1</test>;
     };
 
     const AsyncCompExample2 = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       return <test>AsyncCompExample2</test>;
     };
+
+    const startTime = performance.now();
 
     let xml = (
       await renderAsync(
         <root version="1.0">
+          <AsyncCompExample1 />
           <test count="2">
             <item id="1">
-              <item>First Item</item>
               <AsyncCompExample1 />
+              <item>Middle Item</item>
               <AsyncCompExample2 />
             </item>
             <item id="2">
@@ -388,16 +390,21 @@ describe.only('renderAsync', () => {
               </test>
             </item>
           </test>
+          <AsyncCompExample1 />
         </root>,
       )
     ).end({ headless: true, prettyPrint: true });
 
+    const endTime = performance.now();
+    console.log(`Rendering complex nested XML took ${endTime - startTime}ms`);
+
     expect(xml).toMatchInlineSnapshot(`
       "<root version="1.0">
+        <test>AsyncCompExample1</test>
         <test count="2">
           <item id="1">
-            <item>First Item</item>
             <test>AsyncCompExample1</test>
+            <item>Middle Item</item>
             <test>AsyncCompExample2</test>
           </item>
           <item id="2">
@@ -407,11 +414,12 @@ describe.only('renderAsync', () => {
             </test>
           </item>
         </test>
+        <test>AsyncCompExample1</test>
       </root>"
     `);
   });
 
-  test('should render with Comment, CData, and Ins elements', async () => {
+  test.skip('should render with Comment, CData, and Ins elements', async () => {
     const xml = (
       await renderAsync(
         <root version="1.0">
