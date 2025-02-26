@@ -8,7 +8,7 @@ import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 
 import { ReactElement } from 'react';
 
-export function renderAsync(
+export async function renderAsync(
   element: ReactElement | JsxXmlElement,
   options?: XMLBuilderCreateOptions,
 ) {
@@ -83,5 +83,6 @@ export function renderAsync(
   }
 
   let cur = create(options ?? {});
-  return withElement(cur, () => renderElement(element)).then(() => cur);
+  await withElement(cur, () => renderElement(element));
+  return cur;
 }
