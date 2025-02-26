@@ -456,4 +456,69 @@ describe.only('renderAsync', () => {
       </root>"
     `);
   });
+
+  test('should handle circular references in array children', async () => {
+    // This test checks if the renderer properly handles potential circular references
+    // when processing array children, as seen in renderChildren function
+    const xml = (
+      await renderAsync(
+        <root>
+          <item>
+            {[
+              <item key="1">First</item>,
+              <item key="2">Second</item>,
+              // Adding a promise to test async resolution
+              Promise.resolve(<item key="3">Async Item</item>),
+            ]}
+          </item>
+        </root>,
+      )
+    ).end({ headless: true, prettyPrint: true });
+
+    expect(xml).toMatchInlineSnapshot(`
+      "<root>
+        <item>
+          <item key="1">First</item>
+          <item key="2">Second</item>
+          <item key="3">Async Item</item>
+        </item>
+      </root>"
+    `);
+  });
+
+  test('should handle nested promises and potential node type issues', async () => {
+    // This test verifies the renderer correctly handles node types when removing elements
+    // and properly processes nested promises
+    const nestedPromise = Promise.resolve(
+      Promise.resolve(<item>Deeply nested promise</item>),
+    );
+
+    const xml = (
+      await renderAsync(
+        <root>
+          <Comment>This should be preserved</Comment>
+          <CData>This CDATA should be preserved</CData>
+          <Ins target="proc" content="This instruction should be preserved" />
+          <test>
+            <item key="1">Regular item</item>
+            {nestedPromise}
+            <Comment key="2">Nested comment</Comment>
+          </test>
+        </root>,
+      )
+    ).end({ headless: true, prettyPrint: true });
+
+    expect(xml).toMatchInlineSnapshot(`
+      "<root>
+        <!--This should be preserved-->
+        <![CDATA[This CDATA should be preserved]]>
+        <?proc This instruction should be preserved?>
+        <test>
+          <!--Nested comment-->
+          <item key="1">Regular item</item>
+          <item>Deeply nested promise</item>
+        </test>
+      </root>"
+    `);
+  });
 });

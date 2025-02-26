@@ -14,3 +14,5 @@ export type {
   JsxXmlComponentElement,
   JsxXmlTagElement,
 } from './lib/types';
+
+export { renderAsync } from './lib/render-async';

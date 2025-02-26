@@ -18,10 +18,8 @@ export function createFragment(children: ReactNode) {
  * Creates built-in XML components with a custom getCurrentElement function
  */
 export function createBuiltins(
-  getCurrentElementInput: typeof defaultGetCurrentElement,
+  getCurrentElement: typeof defaultGetCurrentElement,
 ) {
-  const getCurrentElement = getCurrentElementInput;
-
   /**
    * @public
    */
