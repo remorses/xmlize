@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import { createJsxXmlComponentElement, createJsxXmlTagElement } from './jsx';
 import { isFragment } from 'react-is';
-import { createFragment } from '../builtin/Fragment';
+import { createFragment } from '../builtin';
 
 export function reactElementToJsxXmlElement(element: ReactElement) {
   const elementProps: Record<string, any> = element.props as any;
