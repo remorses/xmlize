@@ -336,14 +336,14 @@ describe('render', () => {
   });
 });
 
-describe.only('renderAsync', () => {
+describe('renderAsync', () => {
   test('async components', async () => {
     const AsyncComponent = async (props: { x: number }) => {
       // Simulate async operation
       await new Promise((resolve) => setTimeout(resolve, 0));
       return (
         <item x={props.x}>
-          <item />
+          <test />
         </item>
       );
     };
@@ -357,7 +357,7 @@ describe.only('renderAsync', () => {
     ).end({ headless: true });
 
     expect(xml).toMatchInlineSnapshot(
-      `"<root><item x="5"><item/></item></root>"`,
+      `"<root><item x="5"><test/></item></root>"`,
     );
   });
 

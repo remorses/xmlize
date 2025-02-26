@@ -16,7 +16,7 @@ export default defineConfig({
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     coverage: {
       reporter: ['clover', 'json', 'lcov', 'text'],
-      // provider: 'istanbul',
+      provider: 'istanbul',
       include: ['src'],
     },
   },
