@@ -19,8 +19,6 @@ export async function renderAsync(
     return stack[stack.length - 1];
   }
 
-  const { Comment, CData, Ins } = createBuiltins(getCurrentElement);
-
   async function withElement<T>(
     cur: XMLBuilder,
     fn: () => Promise<T> | T,
@@ -34,13 +32,12 @@ export async function renderAsync(
     }
   }
 
-  async function renderElement(
+  function renderElement(
     element: ReactElement | JsxXmlElement,
     stack = elementsStack,
   ): Promise<XMLBuilder> {
     if (element instanceof Promise) {
-      const resolved = await element;
-      return renderElement(resolved, stack);
+      return element.then((resolved) => renderElement(resolved, stack));
     }
 
     if (isElement(element)) {
@@ -82,14 +79,19 @@ export async function renderAsync(
     element: any,
     stack = elementsStack,
   ): Promise<XMLBuilder> {
+    const getter = () => getCurrentElement(stack);
+
     if (element.type === builtin.Comment) {
-      return renderChildren(Comment(element.props), stack);
+      const { Comment } = createBuiltins(getter);
+      return await renderChildren(Comment(element.props), stack);
     }
     if (element.type === builtin.CData) {
-      return renderChildren(CData(element.props), stack);
+      const { CData } = createBuiltins(getter);
+      return await renderChildren(CData(element.props), stack);
     }
     if (element.type === builtin.Ins) {
-      return renderChildren(Ins(element.props), stack);
+      const { Ins } = createBuiltins(getter);
+      return await renderChildren(Ins(element.props), stack);
     }
     return renderChildren(await element.type(element.props), stack);
   }
@@ -101,9 +103,9 @@ export async function renderAsync(
     const cur = getCurrentElement(stack);
 
     if (typeof children === 'string') {
-      return cur.txt(children);
+      cur.txt(children);
     } else if (typeof children === 'number') {
-      return cur.txt(children.toString());
+      cur.txt(children.toString());
     } else if (Array.isArray(children)) {
       const elements = await Promise.all(
         children.map((child) => {
@@ -112,9 +114,21 @@ export async function renderAsync(
         }),
       );
       // reorder elements to be same as promise.all
-      cur.each((x) => x.remove());
+      cur.toArray(false).forEach((x) => {
+        // Skip removing comments, CDATA sections, and processing instructions
+        if (
+          x.node.nodeType !== 8 && // Comment
+          x.node.nodeType !== 4 && // CDATA
+          x.node.nodeType !== 7 // Ins
+        ) {
+          x.remove();
+        }
+      });
       for (const element of elements) {
-        cur.import(element);
+        // Skip importing if element is the same as cur to avoid circular references
+        if (element !== cur) {
+          cur.import(element);
+        }
       }
       return cur;
     } else if (children) {

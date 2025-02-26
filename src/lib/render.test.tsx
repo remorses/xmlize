@@ -360,6 +360,7 @@ describe.only('renderAsync', () => {
       `"<root><item x="5"><item/></item></root>"`,
     );
   });
+
   test('renders complex nested XML structure', async () => {
     const AsyncCompExample1 = async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -381,7 +382,9 @@ describe.only('renderAsync', () => {
             <item id="1">
               <AsyncCompExample1 />
               <item>Middle Item</item>
-              <AsyncCompExample2 />
+              <item>
+                <AsyncCompExample2 />
+              </item>
             </item>
             <item id="2">
               <item>Second Item</item>
@@ -396,7 +399,8 @@ describe.only('renderAsync', () => {
     ).end({ headless: true, prettyPrint: true });
 
     const endTime = performance.now();
-    console.log(`Rendering complex nested XML took ${endTime - startTime}ms`);
+    // Verify that components render concurrently
+    expect(endTime - startTime).toBeLessThan(120);
 
     expect(xml).toMatchInlineSnapshot(`
       "<root version="1.0">
@@ -405,7 +409,9 @@ describe.only('renderAsync', () => {
           <item id="1">
             <test>AsyncCompExample1</test>
             <item>Middle Item</item>
-            <test>AsyncCompExample2</test>
+            <item>
+              <test>AsyncCompExample2</test>
+            </item>
           </item>
           <item id="2">
             <item>Second Item</item>
@@ -419,7 +425,7 @@ describe.only('renderAsync', () => {
     `);
   });
 
-  test.skip('should render with Comment, CData, and Ins elements', async () => {
+  test('should render with Comment, CData, and Ins elements', async () => {
     const xml = (
       await renderAsync(
         <root version="1.0">
