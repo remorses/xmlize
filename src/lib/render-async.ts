@@ -5,8 +5,9 @@ import { isElement } from 'react-is';
 import { reactElementToJsxXmlElement } from './react';
 import { JsxXmlElement } from './types';
 import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
-
+import * as builtin from '../builtin';
 import { ReactElement } from 'react';
+import { createBuiltins } from '../builtin';
 
 export async function renderAsync(
   element: ReactElement | JsxXmlElement,
@@ -17,6 +18,8 @@ export async function renderAsync(
   function getCurrentElement() {
     return elementsStack[elementsStack.length - 1];
   }
+
+  const { Comment, CData, Ins } = createBuiltins(getCurrentElement);
 
   function withElement(
     cur: XMLBuilder,
@@ -63,6 +66,15 @@ export async function renderAsync(
   }
 
   function renderComponentElement(element: any) {
+    if (element.type === builtin.Comment) {
+      return renderChildren(Comment(element.props));
+    }
+    if (element.type === builtin.CData) {
+      return renderChildren(CData(element.props));
+    }
+    if (element.type === builtin.Ins) {
+      return renderChildren(Ins(element.props));
+    }
     return renderChildren(element.type(element.props));
   }
 

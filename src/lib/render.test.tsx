@@ -362,12 +362,12 @@ describe.only('renderAsync', () => {
   });
 
   test('renders complex nested XML structure', async () => {
-    const AsyncCData = async () => {
+    const AsyncCompExample1 = async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       return <test>{'<special>content</special>'}</test>;
     };
 
-    const AsyncComment = async () => {
+    const AsyncCompExample2 = async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       return <test>This is item 1</test>;
     };
@@ -378,8 +378,8 @@ describe.only('renderAsync', () => {
           <test count="2">
             <item id="1">
               <item>First Item</item>
-              <AsyncCData />
-              <AsyncComment />
+              <AsyncCompExample1 />
+              <AsyncCompExample2 />
             </item>
             <item id="2">
               <item>Second Item</item>
@@ -409,6 +409,38 @@ describe.only('renderAsync', () => {
             </item>
             <test>&lt;special&gt;content&lt;/special&gt;</test>
             <test>This is item 1</test>
+          </item>
+        </test>
+      </root>"
+    `);
+  });
+
+  test('should render with Comment, CData, and Ins elements', async () => {
+    const xml = (
+      await renderAsync(
+        <root version="1.0">
+          <test>
+            <Comment>This is a comment</Comment>
+            <CData>some text in cdata</CData>
+            <Ins target="processing" content="instruction" />
+            <item>
+              <Comment>Nested comment</Comment>
+              <CData>Nested CDATA section</CData>
+            </item>
+          </test>
+        </root>,
+      )
+    ).end({ headless: true, prettyPrint: true });
+
+    expect(xml).toMatchInlineSnapshot(`
+      "<root version="1.0">
+        <test>
+          <!--This is a comment-->
+          <![CDATA[some text in cdata]]>
+          <?processing instruction?>
+          <item>
+            <!--Nested comment-->
+            <![CDATA[Nested CDATA section]]>
           </item>
         </test>
       </root>"
