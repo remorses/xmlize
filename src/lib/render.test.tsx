@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { CData, Comment, Fragment, Ins, render } from '../index';
 import { Component } from 'react';
+import { createContext, useContext } from './context';
 import { renderAsync } from './render-async';
 import { create } from 'xmlbuilder2';
+import { createYieldTracker } from './yield-tracker';
 
 declare global {
   namespace React {
@@ -338,10 +340,50 @@ describe('render', () => {
 });
 
 describe('renderAsync', () => {
+  test('only sync components', async () => {
+    const Component = (props: { x: number; children?: React.ReactNode }) => {
+      return (
+        <item x={props.x}>
+          <test />
+          text
+          {props.children}
+        </item>
+      );
+    };
+    const tracker = createYieldTracker().start();
+
+    let xml = (
+      await renderAsync(
+        <root>
+          <Component x={5} />
+          <Component x={10}>
+            <item>Child content</item>
+          </Component>
+        </root>,
+      )
+    ).end({ headless: true, prettyPrint: true });
+
+    const eventLoopYields = tracker.stop();
+    expect(eventLoopYields).toBe(1);
+
+    expect(xml).toMatchInlineSnapshot(
+      `
+      "<root>
+        <item x="5">
+          <test/>
+          text
+        </item>
+        <item x="10">
+          <test/>
+          text
+          <item>Child content</item>
+        </item>
+      </root>"
+    `,
+    );
+  });
   test('async components', async () => {
     const AsyncComponent = async (props: { x: number }) => {
-      // Simulate async operation
-      await new Promise((resolve) => setTimeout(resolve, 0));
       return (
         <item x={props.x}>
           <test />
@@ -349,31 +391,38 @@ describe('renderAsync', () => {
       );
     };
 
+    const tracker = createYieldTracker().start();
+
     let xml = (
       await renderAsync(
         <root>
+          <AsyncComponent x={5} />
           <AsyncComponent x={5} />
         </root>,
       )
     ).end({ headless: true });
 
+    const eventLoopYields = tracker.stop();
+    expect(eventLoopYields).toMatchInlineSnapshot(`8`);
     expect(xml).toMatchInlineSnapshot(
-      `"<root><item x="5"><test/></item></root>"`,
+      `"<root><item x="5"><test/></item><item x="5"><test/></item></root>"`,
     );
   });
 
   test('renders complex nested XML structure', async () => {
     const AsyncCompExample1 = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await sleep(100);
       return <test>AsyncCompExample1</test>;
     };
 
     const AsyncCompExample2 = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await sleep(100);
       return <test>AsyncCompExample2</test>;
     };
 
     const startTime = performance.now();
+
+    const tracker = createYieldTracker().start();
 
     let xml = (
       await renderAsync(
@@ -399,6 +448,8 @@ describe('renderAsync', () => {
       )
     ).end({ headless: true, prettyPrint: true });
 
+    let eventLoopYields = tracker.stop();
+    expect(eventLoopYields).toMatchInlineSnapshot(`38`);
     const endTime = performance.now();
     // Verify that components render concurrently
     expect(endTime - startTime).toBeLessThan(120);
@@ -551,7 +602,7 @@ describe('renderAsync', () => {
     // Attempt to render an object which is not a valid React element
     const invalidElement = {} as any;
 
-    function Throws() {
+    async function Throws() {
       return <test>{invalidElement}</test>;
     }
 
@@ -634,5 +685,96 @@ describe('renderAsync', () => {
         </test>
       </root>"
     `);
+  });
+});
+
+function sleep(ms = 100) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const exampleContext = createContext({ key: 'default' });
+
+describe('context', () => {
+  test('synchronous useContext should work correctly', () => {
+    function TestComponent() {
+      const value = useContext(exampleContext);
+      expect(value.key).toBe('custom-value');
+      return <item>Value: {value.key}</item>;
+    }
+
+    function ParentComponent() {
+      return (
+        <exampleContext.Provider value={{ key: 'custom-value' }}>
+          <root>
+            <TestComponent />
+          </root>
+        </exampleContext.Provider>
+      );
+    }
+
+    const view = render(<ParentComponent />).end({ headless: true });
+    expect(view).toBe('<root><item>Value: custom-value</item></root>');
+  });
+
+  test('concurrent useContext should have their context scoped', async () => {
+    function ParentComponent({ key }) {
+      return (
+        <exampleContext.Provider value={{ key }}>
+          <item>
+            <AsyncComponent key={key}>
+              <FirstSibling key={key} />
+            </AsyncComponent>
+            <SecondSibling key={key} />
+          </item>
+        </exampleContext.Provider>
+      );
+    }
+
+    async function AsyncComponent({ children, key }) {
+      const value = useContext(exampleContext);
+      expect(value.key).toBe(key);
+      await sleep(1);
+      return children;
+    }
+
+    async function FirstSibling({ key }) {
+      const value = useContext(exampleContext);
+      await sleep();
+      expect(value.key).toBe(key);
+      return <div>First: {value.key}</div>;
+    }
+
+    async function SecondSibling({ key }) {
+      const value = useContext(exampleContext);
+      await sleep();
+      expect(value.key).toBe(key);
+      return <div>Second: {value.key}</div>;
+    }
+
+    const keys = [
+      'default',
+      'key1',
+      'key2',
+      'more',
+      'updated-by-first-sibling',
+    ];
+    const results = await Promise.all(
+      keys.map(async (key) => {
+        const view = await renderAsync(<ParentComponent key={key} />);
+        return view.end({ headless: true });
+      }),
+    );
+
+    expect(results).toMatchInlineSnapshot(
+      `
+      [
+        "<item><div>First: default</div><div>Second: default</div></item>",
+        "<item><div>First: key1</div><div>Second: key1</div></item>",
+        "<item><div>First: key2</div><div>Second: key2</div></item>",
+        "<item><div>First: more</div><div>Second: more</div></item>",
+        "<item><div>First: updated-by-first-sibling</div><div>Second: updated-by-first-sibling</div></item>",
+      ]
+    `,
+    );
   });
 });

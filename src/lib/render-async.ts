@@ -5,11 +5,12 @@ import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces';
 import * as builtin from '../builtin';
 import { createBuiltins } from '../builtin';
+import { setGlobalContexts } from './context';
 import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 import { reactElementToJsxXmlElement } from './react';
 import { JsxXmlElement } from './types';
 
-export async function renderAsync(
+export function renderAsync(
   element: ReactElement | JsxXmlElement,
   options?: XMLBuilderCreateOptions,
 ) {
@@ -24,7 +25,10 @@ export async function renderAsync(
     stack = elementsStack,
   ): Promise<XMLBuilder> | XMLBuilder {
     if (element instanceof Promise) {
-      return element.then((resolved) => renderElement(resolved, stack));
+      return element.then((resolved) => {
+        setGlobalContexts(ownContext);
+        return renderElement(resolved, stack);
+      });
     }
 
     if (isElement(element)) {
@@ -42,24 +46,34 @@ export async function renderAsync(
       getCurrentElement(stack).import(element);
       return element as XMLBuilder;
     } else {
-      throw new Error('Unsupported element type: ' + element);
+      throw new Error('Unsupported element type: ' + String(element));
     }
   }
 
-  async function renderTagElement(
+  function renderTagElement(
     element: any,
     stack = elementsStack,
-  ): Promise<XMLBuilder> {
+  ): Promise<XMLBuilder> | XMLBuilder {
     const parent = getCurrentElement(stack);
     const cur = parent.ele(element.type);
     renderAttrs(cur, element.attrs);
 
     if (element.children) {
       stack.push(cur);
+      let res;
+
       try {
-        await renderChildren(element.children, stack);
+        res = renderChildren(element.children, stack);
       } finally {
-        stack.pop();
+        if (res instanceof Promise) {
+          return res.then(() => {
+            setGlobalContexts(ownContext);
+            stack.pop();
+            return cur;
+          });
+        } else {
+          stack.pop();
+        }
       }
     }
     return cur;
@@ -89,9 +103,14 @@ export async function renderAsync(
       const { Ins } = createBuiltins(getter);
       return renderChildren(Ins(element.props), stack);
     }
+
     let res = element.type(element.props);
+
     if (res instanceof Promise) {
-      return res.then((resolved) => renderChildren(resolved, stack));
+      return res.then((resolved) => {
+        setGlobalContexts(ownContext);
+        return renderChildren(resolved, stack);
+      });
     }
     return renderChildren(res, stack);
   }
@@ -107,12 +126,17 @@ export async function renderAsync(
     } else if (typeof children === 'number') {
       return cur.txt(children.toString());
     } else if (Array.isArray(children)) {
-      return Promise.all(
-        children.map((child) => {
-          const childStack = [...stack];
-          return renderChildren(child, childStack);
-        }),
-      ).then((elements) => {
+      const promises = children.map((child) => {
+        const childStack = [...stack];
+        return renderChildren(child, childStack);
+      });
+
+      const hasPromises = promises.some((p) => p instanceof Promise);
+      if (!hasPromises) {
+        return cur;
+      }
+      return Promise.all(promises).then((elements) => {
+        setGlobalContexts(ownContext);
         // reorder elements to be same as promise.all
         cur.toArray(false).forEach((x) => {
           // Skip removing comments, CDATA sections, and processing instructions
@@ -138,6 +162,14 @@ export async function renderAsync(
 
   let cur = create(options ?? {});
   elementsStack.push(cur);
-  await renderElement(element, elementsStack);
+
+  let ownContext = new Map();
+  setGlobalContexts(ownContext);
+  let res = renderElement(element, elementsStack);
+  if (res instanceof Promise) {
+    return res.then(() => {
+      return cur;
+    });
+  }
   return cur;
 }

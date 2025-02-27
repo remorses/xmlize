@@ -26,5 +26,5 @@ export function reactElementToJsxXmlElement(element: ReactElement) {
   if (isFragment(element)) {
     return createFragment(elementProps.children);
   }
-  throw new Error('Unsupported element type');
+  throw new Error('Unsupported element type: ' + String(element));
 }
