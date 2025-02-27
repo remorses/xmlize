@@ -515,7 +515,7 @@ describe('renderAsync', () => {
       'Async component error',
     );
   });
-  test.only('should throw error for unsupported element type', async () => {
+  test('should throw error for unsupported element type', async () => {
     // Attempt to render an object which is not a valid React element
     const invalidElement = {} as any;
 
