@@ -33,6 +33,14 @@ export async function renderAsync(
       return renderTagElement(element, stack);
     } else if (isJsxXmlComponentElement(element)) {
       return renderComponentElement(element, stack);
+    } else if (
+      typeof element === 'object' &&
+      element !== null &&
+      'node' in element
+    ) {
+      // Handle XMLBuilder2 node objects returned from components
+      getCurrentElement(stack).import(element);
+      return element as XMLBuilder;
     } else {
       throw new Error('Unsupported element type: ' + element);
     }

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { CData, Comment, Fragment, Ins, render } from '../index';
 import { Component } from 'react';
 import { renderAsync } from './render-async';
+import { create } from 'xmlbuilder2';
 
 declare global {
   namespace React {
@@ -534,6 +535,38 @@ describe('renderAsync', () => {
     }
     await expect(renderAsync(<ComponentWrapper />)).rejects.toThrow(
       'Unsupported element type',
+    );
+  });
+
+  test('should handle component returning XmlBuilder', async () => {
+    // Component that returns a string without any parent tags
+    const TextComponent = () => {
+      return create('<text>Just a text string</text>') as any;
+    };
+
+    function WrapperComponent() {
+      return (
+        <root>
+          <test>
+            <TextComponent />
+          </test>
+        </root>
+      );
+    }
+
+    const xml = await renderAsync(<WrapperComponent />, {});
+
+    console.log(xml);
+    expect(
+      xml.end({ headless: true, prettyPrint: true }),
+    ).toMatchInlineSnapshot(
+      `
+      "<root>
+        <test>
+          <text>Just a text string</text>
+        </test>
+      </root>"
+    `,
     );
   });
 
