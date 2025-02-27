@@ -115,10 +115,10 @@ export function renderAsync(
     return renderChildren(res, stack);
   }
 
-  function renderChildren(
+  async function renderChildren(
     children: any,
     stack = elementsStack,
-  ): Promise<XMLBuilder> | XMLBuilder {
+  ): Promise<XMLBuilder> {
     const cur = getCurrentElement(stack);
 
     if (typeof children === 'string') {
@@ -126,34 +126,23 @@ export function renderAsync(
     } else if (typeof children === 'number') {
       return cur.txt(children.toString());
     } else if (Array.isArray(children)) {
-      const promises = children.map((child) => {
-        const childStack = [...stack];
-        return renderChildren(child, childStack);
-      });
-
-      const hasPromises = promises.some((p) => p instanceof Promise);
-      if (!hasPromises) {
+      // Process children sequentially instead of in parallel
+      if (children.length === 0) {
         return cur;
       }
-      return Promise.all(promises).then((elements) => {
-        setGlobalContexts(ownContext);
-        // reorder elements to be same as promise.all
-        cur.toArray(false).forEach((x) => {
-          // Skip removing comments, CDATA sections, and processing instructions
-          if (elements.map((x) => x.node).includes(x.node)) {
-            x.remove();
-          }
-        });
 
-        elements.forEach((element) => {
-          // Skip importing if element is the same as cur to avoid circular references
-          if (element !== cur) {
-            cur.import(element);
-          }
-        });
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        const childStack = [...stack];
 
-        return cur;
-      });
+        const childResult = renderChildren(child, childStack);
+        if (childResult instanceof Promise) {
+          await childResult;
+          setGlobalContexts(ownContext);
+        }
+      }
+
+      return cur;
     } else if (children) {
       return renderElement(children, stack);
     }
