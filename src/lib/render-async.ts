@@ -103,9 +103,9 @@ export async function renderAsync(
     const cur = getCurrentElement(stack);
 
     if (typeof children === 'string') {
-      cur.txt(children);
+      return cur.txt(children);
     } else if (typeof children === 'number') {
-      cur.txt(children.toString());
+      return cur.txt(children.toString());
     } else if (Array.isArray(children)) {
       return Promise.all(
         children.map((child) => {
@@ -116,11 +116,7 @@ export async function renderAsync(
         // reorder elements to be same as promise.all
         cur.toArray(false).forEach((x) => {
           // Skip removing comments, CDATA sections, and processing instructions
-          if (
-            x.node.nodeType !== 8 && // Comment
-            x.node.nodeType !== 4 && // CDATA
-            x.node.nodeType !== 7 // Ins
-          ) {
+          if (elements.map((x) => x.node).includes(x.node)) {
             x.remove();
           }
         });

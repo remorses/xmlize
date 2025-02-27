@@ -394,7 +394,7 @@ describe('renderAsync', () => {
               </test>
             </item>
           </test>
-          <AsyncCompExample1 />
+          <AsyncCompExample2 />
         </root>,
       )
     ).end({ headless: true, prettyPrint: true });
@@ -421,7 +421,7 @@ describe('renderAsync', () => {
             </test>
           </item>
         </test>
-        <test>AsyncCompExample1</test>
+        <test>AsyncCompExample2</test>
       </root>"
     `);
   });
@@ -453,6 +453,38 @@ describe('renderAsync', () => {
             <!--Nested comment-->
             <![CDATA[Nested CDATA section]]>
           </item>
+        </test>
+      </root>"
+    `);
+  });
+
+  test('should render with expression values', async () => {
+    const value = 'expression value';
+    const numberValue = 42;
+    const boolValue = true;
+
+    const xml = (
+      await renderAsync(
+        <root>
+          <item>string: {value}</item>
+          <item>number: {numberValue}</item>
+          <item>bool: {boolValue.toString()}</item>
+          <item>{`Template ${value}`}</item>
+          <test>
+            <item>{value}</item>
+          </test>
+        </root>,
+      )
+    ).end({ headless: true, prettyPrint: true });
+
+    expect(xml).toMatchInlineSnapshot(`
+      "<root>
+        <item>string: expression value</item>
+        <item>number: 42</item>
+        <item>bool: true</item>
+        <item>Template expression value</item>
+        <test>
+          <item>expression value</item>
         </test>
       </root>"
     `);
