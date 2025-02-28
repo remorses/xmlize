@@ -825,7 +825,6 @@ describe('context', () => {
     async function AsyncComponentWithNested({ key }: { key?: string }) {
       const value = useContext(exampleContext);
 
-      await sleep(1);
       expect(value.key).toBe(key);
       const nestedKey = 'nestedKey';
       const view = await renderAsync(
