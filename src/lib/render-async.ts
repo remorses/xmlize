@@ -9,6 +9,7 @@ import { setGlobalContexts } from './context';
 import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 import { reactElementToJsxXmlElement } from './react';
 import { JsxXmlElement } from './types';
+import { isXmlBuilder } from './render';
 
 export function renderAsync(
   element: ReactElement | JsxXmlElement,
@@ -37,14 +38,10 @@ export function renderAsync(
       return renderTagElement(element, stack);
     } else if (isJsxXmlComponentElement(element)) {
       return renderComponentElement(element, stack);
-    } else if (
-      typeof element === 'object' &&
-      element !== null &&
-      'node' in element
-    ) {
+    } else if (isXmlBuilder(element)) {
       // Handle XMLBuilder2 node objects returned from components
       getCurrentElement(stack).import(element);
-      return element as XMLBuilder;
+      return element;
     } else {
       throw new Error('Unsupported element type: ' + String(element));
     }

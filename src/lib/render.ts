@@ -30,6 +30,8 @@ function renderElement(element: ReactElement | JsxXmlElement) {
     renderTagElement(element);
   } else if (isJsxXmlComponentElement(element)) {
     renderComponentElement(element);
+  } else if (isXmlBuilder(element)) {
+    getCurrentElement().import(element);
   } else {
     throw new Error('Unsupported element type');
   }
@@ -65,4 +67,8 @@ function renderChildren(children: any) {
   } else if (children) {
     renderElement(children);
   }
+}
+
+export function isXmlBuilder(element: any): element is XMLBuilder {
+  return typeof element === 'object' && element !== null && 'node' in element;
 }
