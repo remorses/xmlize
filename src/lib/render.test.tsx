@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { CData, Comment, Fragment, Ins, render } from '../index';
-import { Component } from 'react';
+import { Component, forwardRef } from 'react';
 import { createContext, useContext } from './context';
 import { renderAsync } from './render-async';
 import { create } from 'xmlbuilder2';
@@ -686,6 +686,16 @@ describe('renderAsync', () => {
         </test>
       </root>"
     `);
+  });
+});
+
+describe('forwardRef', () => {
+  test('should render a forwardRef element', () => {
+    const ForwardRefComponent = forwardRef((props, ref) => {
+      return <item ref={ref}></item>;
+    });
+    const xml = render(<ForwardRefComponent />).end({ headless: true });
+    expect(xml).toBe('<item/>');
   });
 });
 
