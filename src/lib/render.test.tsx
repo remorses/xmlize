@@ -364,7 +364,7 @@ describe('renderAsync', () => {
     ).end({ headless: true, prettyPrint: true });
 
     const eventLoopYields = tracker.stop();
-    expect(eventLoopYields).toMatchInlineSnapshot(`24`);
+    expect(eventLoopYields).toMatchInlineSnapshot(`1`);
 
     expect(xml).toMatchInlineSnapshot(
       `
@@ -403,7 +403,7 @@ describe('renderAsync', () => {
     ).end({ headless: true });
 
     const eventLoopYields = tracker.stop();
-    expect(eventLoopYields).toMatchInlineSnapshot(`21`);
+    expect(eventLoopYields).toMatchInlineSnapshot(`8`);
     expect(xml).toMatchInlineSnapshot(
       `"<root><item x="5"><test/></item><item x="5"><test/></item></root>"`,
     );
@@ -449,7 +449,7 @@ describe('renderAsync', () => {
     ).end({ headless: true, prettyPrint: true });
 
     let eventLoopYields = tracker.stop();
-    expect(eventLoopYields).toMatchInlineSnapshot(`83`);
+    expect(eventLoopYields).toMatchInlineSnapshot(`38`);
     const endTime = performance.now();
     console.log(`took ${endTime - startTime}ms`);
     // Verify that components render concurrently
@@ -680,9 +680,9 @@ describe('renderAsync', () => {
         <![CDATA[This CDATA should be preserved]]>
         <?proc This instruction should be preserved?>
         <test>
+          <!--Nested comment-->
           <item key="1">Regular item</item>
           <item>Deeply nested promise</item>
-          <!--Nested comment-->
         </test>
       </root>"
     `);
@@ -797,7 +797,7 @@ describe('context', () => {
     function ParentComponent({ key }) {
       return (
         <exampleContext.Provider value={{ key }}>
-          <item>
+          <item ParentComponent>
             <AsyncComponent key={key}>
               <FirstSibling key={key} />
             </AsyncComponent>
@@ -819,7 +819,7 @@ describe('context', () => {
       expect(value.key).toBe(key);
       await sleep(1);
 
-      return children;
+      return <item AsyncComponent>children</item>;
     }
 
     async function AsyncComponentWithNested({ key }: { key?: string }) {
@@ -830,7 +830,17 @@ describe('context', () => {
       const view = await renderAsync(
         <exampleContext.Provider value={{ key: nestedKey }}>
           <root nested="true">
-            <AsyncComponent key={nestedKey}>nested</AsyncComponent>
+            <AsyncComponent key={nestedKey}>nested1 </AsyncComponent>
+            <AsyncComponent key={nestedKey}>nested2 </AsyncComponent>
+            <AsyncComponent key={nestedKey}>
+              <exampleContext.Provider value={{ key: 'evenMoreNested' }}>
+                <root evenMoreNested>
+                  <AsyncComponent key={'evenMoreNested'}>
+                    nested3{' '}
+                  </AsyncComponent>{' '}
+                </root>
+              </exampleContext.Provider>
+            </AsyncComponent>
           </root>
         </exampleContext.Provider>,
       );
@@ -869,33 +879,86 @@ describe('context', () => {
     expect(results).toMatchInlineSnapshot(
       `
       [
-        "<item>
-        <div>First: default</div>
-        <root nested="true">nested</root>
+        "<item ParentComponent="true">
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
+        <item AsyncComponent="true">children</item>
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
         <div>Second: default</div>
       </item>",
-        "<item>
-        <div>First: key1</div>
-        <root nested="true">nested</root>
+        "<item ParentComponent="true">
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
+        <item AsyncComponent="true">children</item>
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
         <div>Second: key1</div>
       </item>",
-        "<item>
-        <div>First: key2</div>
-        <root nested="true">nested</root>
+        "<item ParentComponent="true">
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
+        <item AsyncComponent="true">children</item>
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
         <div>Second: key2</div>
       </item>",
-        "<item>
-        <div>First: more</div>
-        <root nested="true">nested</root>
+        "<item ParentComponent="true">
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
+        <item AsyncComponent="true">children</item>
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
         <div>Second: more</div>
       </item>",
-        "<item>
-        <div>First: updated-by-first-sibling</div>
-        <root nested="true">nested</root>
+        "<item ParentComponent="true">
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
+        <item AsyncComponent="true">children</item>
+        <root nested="true">
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+          <item AsyncComponent="true">children</item>
+        </root>
         <div>Second: updated-by-first-sibling</div>
       </item>",
       ]
     `,
     );
+
+    const resultsSequential: string[] = [];
+    for (const key of keys) {
+      const view = await renderAsync(<ParentComponent key={key} />);
+      resultsSequential.push(view.end({ headless: true, prettyPrint: true }));
+    }
+
+    expect(JSON.stringify(resultsSequential)).toBe(JSON.stringify(results));
   });
 });

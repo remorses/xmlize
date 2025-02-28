@@ -115,10 +115,10 @@ export function renderAsync(
     return renderChildren(res, stack);
   }
 
-  async function renderChildren(
+  function renderChildren(
     children: any,
     stack = elementsStack,
-  ): Promise<XMLBuilder> {
+  ): Promise<XMLBuilder> | XMLBuilder {
     const cur = getCurrentElement(stack);
 
     if (typeof children === 'string') {
@@ -126,23 +126,37 @@ export function renderAsync(
     } else if (typeof children === 'number') {
       return cur.txt(children.toString());
     } else if (Array.isArray(children)) {
-      // Process children sequentially instead of in parallel
-      if (children.length === 0) {
+      const promises = children.map((child, index) => {
+        const childStack = [...stack];
+        let res = renderChildren(child, childStack);
+        // if a component calls renderAsync, context will change synchronously and need to be reset after render
+        setGlobalContexts(ownContext);
+        return res;
+      });
+
+      const hasPromises = promises.some((p) => p instanceof Promise);
+      if (!hasPromises) {
         return cur;
       }
+      return Promise.all(promises).then((elements) => {
+        setGlobalContexts(ownContext);
+        // reorder elements to be same as promise.all
+        cur.toArray(false).forEach((x) => {
+          // Skip removing comments, CDATA sections, and processing instructions
+          if (elements.map((x) => x.node).includes(x.node)) {
+            x.remove();
+          }
+        });
 
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i];
-        const childStack = [...stack];
+        elements.forEach((element) => {
+          // Skip importing if element is the same as cur to avoid circular references
+          if (element !== cur) {
+            cur.import(element);
+          }
+        });
 
-        const childResult = renderChildren(child, childStack);
-        if (childResult instanceof Promise) {
-          await childResult;
-          setGlobalContexts(ownContext);
-        }
-      }
-
-      return cur;
+        return cur;
+      });
     } else if (children) {
       return renderElement(children, stack);
     }
