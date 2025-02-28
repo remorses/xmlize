@@ -762,18 +762,139 @@ describe('context', () => {
     const results = await Promise.all(
       keys.map(async (key) => {
         const view = await renderAsync(<ParentComponent key={key} />);
-        return view.end({ headless: true });
+        return view.end({ headless: true, prettyPrint: true });
       }),
     );
 
     expect(results).toMatchInlineSnapshot(
       `
       [
-        "<item><div>First: default</div><div>Second: default</div></item>",
-        "<item><div>First: key1</div><div>Second: key1</div></item>",
-        "<item><div>First: key2</div><div>Second: key2</div></item>",
-        "<item><div>First: more</div><div>Second: more</div></item>",
-        "<item><div>First: updated-by-first-sibling</div><div>Second: updated-by-first-sibling</div></item>",
+        "<item>
+        <div>First: default</div>
+        <div>Second: default</div>
+      </item>",
+        "<item>
+        <div>First: key1</div>
+        <div>Second: key1</div>
+      </item>",
+        "<item>
+        <div>First: key2</div>
+        <div>Second: key2</div>
+      </item>",
+        "<item>
+        <div>First: more</div>
+        <div>Second: more</div>
+      </item>",
+        "<item>
+        <div>First: updated-by-first-sibling</div>
+        <div>Second: updated-by-first-sibling</div>
+      </item>",
+      ]
+    `,
+    );
+  });
+  test('concurrent useContext, nested renderAsync', async () => {
+    function ParentComponent({ key }) {
+      return (
+        <exampleContext.Provider value={{ key }}>
+          <item>
+            <AsyncComponent key={key}>
+              <FirstSibling key={key} />
+            </AsyncComponent>
+            <AsyncComponentWithNested key={key} />
+            <SecondSibling key={key} />
+          </item>
+        </exampleContext.Provider>
+      );
+    }
+
+    async function AsyncComponent({
+      children,
+      key,
+    }: {
+      children?: React.ReactNode;
+      key: string;
+    }) {
+      const value = useContext(exampleContext);
+      expect(value.key).toBe(key);
+      await sleep(1);
+
+      return children;
+    }
+
+    async function AsyncComponentWithNested({ key }: { key?: string }) {
+      const value = useContext(exampleContext);
+
+      await sleep(1);
+      expect(value.key).toBe(key);
+      const nestedKey = 'nestedKey';
+      const view = await renderAsync(
+        <exampleContext.Provider value={{ key: nestedKey }}>
+          <root nested="true">
+            <AsyncComponent key={nestedKey}>nested</AsyncComponent>
+          </root>
+        </exampleContext.Provider>,
+      );
+
+      return view as any;
+    }
+
+    async function FirstSibling({ key }) {
+      const value = useContext(exampleContext);
+      await sleep();
+      expect(value.key).toBe(key);
+      return <div>First: {value.key}</div>;
+    }
+
+    async function SecondSibling({ key }) {
+      const value = useContext(exampleContext);
+      await sleep();
+      expect(value.key).toBe(key);
+      return <div>Second: {value.key}</div>;
+    }
+
+    const keys = [
+      'default',
+      'key1',
+      'key2',
+      'more',
+      'updated-by-first-sibling',
+    ];
+    const results = await Promise.all(
+      keys.map(async (key) => {
+        const view = await renderAsync(<ParentComponent key={key} />);
+        return view.end({ headless: true, prettyPrint: true });
+      }),
+    );
+
+    expect(results).toMatchInlineSnapshot(
+      `
+      [
+        "<item>
+        <div>First: default</div>
+        <root nested="true">nested</root>
+        <div>Second: default</div>
+      </item>",
+        "<item>
+        <div>First: key1</div>
+        <root nested="true">nested</root>
+        <div>Second: key1</div>
+      </item>",
+        "<item>
+        <div>First: key2</div>
+        <root nested="true">nested</root>
+        <div>Second: key2</div>
+      </item>",
+        "<item>
+        <div>First: more</div>
+        <root nested="true">nested</root>
+        <div>Second: more</div>
+      </item>",
+        "<item>
+        <div>First: updated-by-first-sibling</div>
+        <root nested="true">nested</root>
+        <div>Second: updated-by-first-sibling</div>
+      </item>",
       ]
     `,
     );
