@@ -9,7 +9,7 @@ import { setGlobalContexts } from './context';
 import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 import { reactElementToJsxXmlElement } from './react';
 import { JsxXmlElement } from './types';
-import { isXmlBuilder } from './render';
+import { isReactMemoOrForwardRef, isXmlBuilder } from './render';
 
 export function renderAsync(
   element: ReactElement | JsxXmlElement,
@@ -32,7 +32,7 @@ export function renderAsync(
       });
     }
 
-    if (isElement(element)) {
+    if (isElement(element) || isReactMemoOrForwardRef(element)) {
       return renderElement(reactElementToJsxXmlElement(element), stack);
     } else if (isJsxXmlTagElement(element)) {
       return renderTagElement(element, stack);

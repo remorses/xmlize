@@ -12,7 +12,8 @@ export function reactElementToJsxXmlElement(element: ReactElement) {
     const props = { key, ref, ...rest };
     return createJsxXmlTagElement(element.type, props, children);
   }
-  const elementType = element.type?.['render'] || element.type;
+  const elementType =
+    element.type?.['render'] || element.type?.['type'] || element.type;
   if (typeof elementType === 'function') {
     // @ts-ignore
     const { key, ref } = element;

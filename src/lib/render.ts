@@ -1,12 +1,12 @@
+import { ReactElement } from 'react';
+import { isElement } from 'react-is';
 import { create } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces';
-import { isElement } from 'react-is';
+import { getCurrentElement, withElement } from './elements-stack';
+import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 import { reactElementToJsxXmlElement } from './react';
 import { JsxXmlElement } from './types';
-import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
-import { getCurrentElement, withElement } from './elements-stack';
-import { ReactElement } from 'react';
 
 /**
  *
@@ -23,8 +23,13 @@ export function render(
   return cur;
 }
 
+// this happens when you render a React memo or forwardRef component with jsx-xml
+export function isReactMemoOrForwardRef(element: any): element is ReactElement {
+  return element?.type?.type || element?.type?.render;
+}
+
 function renderElement(element: ReactElement | JsxXmlElement) {
-  if (isElement(element)) {
+  if (isElement(element) || isReactMemoOrForwardRef(element)) {
     renderElement(reactElementToJsxXmlElement(element));
   } else if (isJsxXmlTagElement(element)) {
     renderTagElement(element);
