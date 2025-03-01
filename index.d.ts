@@ -95,6 +95,11 @@ export declare function render(
   options?: XMLBuilderCreateOptions,
 ): XMLBuilder;
 
+export declare function renderAsync(
+  element: ReactElement | JsxXmlElement,
+  options?: XMLBuilderCreateOptions,
+): Promise<XMLBuilder>;
+
 /**
  * @public
  */

@@ -330,7 +330,7 @@ describe('render', () => {
   describe('edge cases', () => {
     test('render a tag with key and ref', () => {
       let xml = render(
-        <test before="value" key="key" ref="ref" after="value" />,
+        <test ref="ref" key="key" before="value" after="value" />,
       ).end({ headless: true });
       expect(xml).toBe(
         `<test key="key" ref="ref" before="value" after="value"/>`,
@@ -474,6 +474,69 @@ describe('renderAsync', () => {
           </item>
         </test>
         <test>AsyncCompExample2</test>
+      </root>"
+    `);
+  });
+
+  test('renders async components in order', async () => {
+    const AsyncCompWithDelay = async ({
+      ms,
+      id,
+    }: {
+      ms: number;
+      id?: string;
+    }) => {
+      await sleep(ms);
+      return <test id={id} />;
+    };
+
+    function Composition({ children }) {
+      return (
+        <root>
+          {children}
+          <item>last by Composition</item>
+        </root>
+      );
+    }
+
+    const PassthroughComponent = ({
+      children,
+    }: {
+      children?: React.ReactNode;
+    }) => {
+      return children;
+    };
+
+    let xml = (
+      await renderAsync(
+        <Composition>
+          <PassthroughComponent>
+            <item>first sync item</item>
+            <AsyncCompWithDelay ms={100} id="1" />
+            <AsyncCompWithDelay ms={30} id="2" />
+            <AsyncCompWithDelay ms={0} id="3" />
+            <item>last sync item</item>
+          </PassthroughComponent>
+          <PassthroughComponent>
+            <AsyncCompWithDelay ms={100} id="1" />
+            <AsyncCompWithDelay ms={30} id="2" />
+            <AsyncCompWithDelay ms={0} id="3" />
+          </PassthroughComponent>
+        </Composition>,
+      )
+    ).end({ headless: true, prettyPrint: true });
+
+    expect(xml).toMatchInlineSnapshot(`
+      "<root>
+        <item>first sync item</item>
+        <test id="1"/>
+        <test id="2"/>
+        <test id="3"/>
+        <item>last sync item</item>
+        <test id="1"/>
+        <test id="2"/>
+        <test id="3"/>
+        <item>last by Composition</item>
       </root>"
     `);
   });
