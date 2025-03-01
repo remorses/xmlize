@@ -1,9 +1,9 @@
-import { describe, expect, test } from 'vitest';
-import { CData, Comment, Fragment, Ins, render } from '../index';
 import { Component, forwardRef } from 'react';
+import { describe, expect, test } from 'vitest';
+import { create } from 'xmlbuilder2';
+import { CData, Comment, Fragment, Ins, render } from '../index';
 import { createContext, useContext } from './context';
 import { renderAsync } from './render-async';
-import { create } from 'xmlbuilder2';
 import { createYieldTracker } from './yield-tracker';
 
 declare global {
@@ -364,7 +364,7 @@ describe('renderAsync', () => {
     ).end({ headless: true, prettyPrint: true });
 
     const eventLoopYields = tracker.stop();
-    expect(eventLoopYields).toMatchInlineSnapshot(`1`);
+    expect(eventLoopYields).toMatchInlineSnapshot(`2`);
 
     expect(xml).toMatchInlineSnapshot(
       `
@@ -724,6 +724,7 @@ describe('context', () => {
     }
 
     const view = render(<ParentComponent />).end({ headless: true });
+
     expect(view).toBe('<root><item>Value: custom-value</item></root>');
   });
 

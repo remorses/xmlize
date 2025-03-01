@@ -1,4 +1,4 @@
-let globalContexts = new Map<symbol, any>();
+export let globalContexts = new Map<symbol, any>();
 
 export function setGlobalContexts(contexts: Map<symbol, any>) {
   globalContexts = contexts;
@@ -10,10 +10,13 @@ type Context<T> = {
   defaultValue: T;
 };
 
+export const defaultContexts = new Map<symbol, any>();
+
 export function createContext<T>(defaultValue: T): Context<T> {
   const contextKey = Symbol();
 
   globalContexts.set(contextKey, defaultValue);
+  defaultContexts.set(contextKey, defaultValue);
 
   const Provider = ({ value, children }: { value: T; children: any }) => {
     globalContexts.set(contextKey, value);

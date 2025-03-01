@@ -3,6 +3,7 @@ import { isElement } from 'react-is';
 import { create } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces';
+import { defaultContexts, setGlobalContexts } from './context';
 import { getCurrentElement, withElement } from './elements-stack';
 import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 import { reactElementToJsxXmlElement } from './react';
@@ -16,6 +17,7 @@ export function render(
   element: ReactElement | JsxXmlElement,
   options?: XMLBuilderCreateOptions,
 ) {
+  setGlobalContexts(new Map(defaultContexts));
   let cur = create(options ?? {});
 
   withElement(cur, () => renderElement(element));

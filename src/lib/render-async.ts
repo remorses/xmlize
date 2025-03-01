@@ -5,13 +5,13 @@ import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces';
 import * as builtin from '../builtin';
 import { createBuiltins } from '../builtin';
-import { setGlobalContexts } from './context';
+import { defaultContexts, setGlobalContexts } from './context';
 import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 import { reactElementToJsxXmlElement } from './react';
-import { JsxXmlElement } from './types';
 import { isReactMemoOrForwardRef, isXmlBuilder } from './render';
+import { JsxXmlElement } from './types';
 
-export function renderAsync(
+export async function renderAsync(
   element: ReactElement | JsxXmlElement,
   options?: XMLBuilderCreateOptions,
 ) {
@@ -163,13 +163,8 @@ export function renderAsync(
   let cur = create(options ?? {});
   elementsStack.push(cur);
 
-  let ownContext = new Map();
+  let ownContext = new Map(defaultContexts);
   setGlobalContexts(ownContext);
-  let res = renderElement(element, elementsStack);
-  if (res instanceof Promise) {
-    return res.then(() => {
-      return cur;
-    });
-  }
+  await renderElement(element, elementsStack);
   return cur;
 }
