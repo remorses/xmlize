@@ -47,6 +47,7 @@
     "build:dts:jsx-dev-runtime": "api-extractor run --local --verbose --config api-extractor-jsx-dev-runtime.json && prettier --write jsx-dev-runtime.d.ts",
     "build:dts": "pnpm build:dts:index && pnpm build:dts:jsx-runtime && pnpm build:dts:jsx-dev-runtime",
     "build": "tsc && vite build && pnpm build:dts",
+    "watch": "vite build --watch",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
