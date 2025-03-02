@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import { isElement } from 'react-is';
-import { create } from 'xmlbuilder2';
+import { fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces';
 import * as builtin from '../builtin';
@@ -160,7 +160,7 @@ export async function renderAsync(
     return cur;
   }
 
-  let cur = create(options ?? {});
+  let cur = fragment(options ?? {});
   elementsStack.push(cur);
 
   let ownContext = new Map(defaultContexts);

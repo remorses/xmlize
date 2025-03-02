@@ -337,6 +337,39 @@ describe('render', () => {
       );
     });
   });
+  describe('fragments and text', () => {
+    test('render a top level fragment with component', () => {
+      const FirstItem = () => <item>First item</item>;
+      const SecondItem = () => <item>Second item</item>;
+
+      let xml = render(
+        <>
+          <FirstItem />
+          <SecondItem />
+        </>,
+      ).end({ headless: true });
+
+      expect(xml).toBe(`<item>First item</item><item>Second item</item>`);
+    });
+
+    test('render a top level fragment with mixed components and JSX', () => {
+      let xml = render(
+        <>
+          <item>First item</item>
+          <item>Second item</item>
+        </>,
+      ).end({ headless: true });
+
+      expect(xml).toBe(`<item>First item</item><item>Second item</item>`);
+    });
+
+    test('render top level text', () => {
+      const TextContent = () => 'Just some text';
+      let xml = render(<TextContent />).end({ headless: true });
+
+      expect(xml).toBe(`Just some text`);
+    });
+  });
 });
 
 describe('renderAsync', () => {

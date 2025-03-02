@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import { isElement } from 'react-is';
-import { create } from 'xmlbuilder2';
+import { fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces';
 import { defaultContexts, setGlobalContexts } from './context';
@@ -18,7 +18,7 @@ export function render(
   options?: XMLBuilderCreateOptions,
 ) {
   setGlobalContexts(new Map(defaultContexts));
-  let cur = create(options ?? {});
+  let cur = fragment(options ?? {});
 
   withElement(cur, () => renderElement(element));
 
