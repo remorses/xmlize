@@ -2,6 +2,7 @@ import { ReactElement } from 'react';
 import { isFragment } from 'react-is';
 import { createFragment } from '../builtin';
 import { createJsxXmlComponentElement, createJsxXmlTagElement } from './jsx';
+import { tryStringify } from './render';
 
 export function reactElementToJsxXmlElement(element: ReactElement) {
   const elementProps: Record<string, any> = element.props as any;
@@ -29,5 +30,5 @@ export function reactElementToJsxXmlElement(element: ReactElement) {
     return createFragment(elementProps.children);
   }
 
-  throw new Error('Unsupported element type: ' + String(element));
+  throw new Error('Unsupported element type: ' + tryStringify(element));
 }

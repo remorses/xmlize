@@ -8,7 +8,7 @@ import { createBuiltins } from '../builtin';
 import { defaultContexts, setGlobalContexts } from './context';
 import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
 import { reactElementToJsxXmlElement } from './react';
-import { isReactMemoOrForwardRef, isXmlBuilder } from './render';
+import { isReactMemoOrForwardRef, isXmlBuilder, tryStringify } from './render';
 import { JsxXmlElement } from './types';
 
 export async function renderAsync(
@@ -43,7 +43,7 @@ export async function renderAsync(
       getCurrentElement(stack).import(element);
       return element;
     } else {
-      throw new Error('Unsupported element type: ' + String(element));
+      throw new Error('Unsupported element type: ' + tryStringify(element));
     }
   }
 

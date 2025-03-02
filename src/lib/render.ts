@@ -40,7 +40,15 @@ function renderElement(element: ReactElement | JsxXmlElement) {
   } else if (isXmlBuilder(element)) {
     getCurrentElement().import(element);
   } else {
-    throw new Error('Unsupported element type');
+    throw new Error('Unsupported element type ' + tryStringify(element));
+  }
+}
+
+export function tryStringify(element: any) {
+  try {
+    return JSON.stringify(element).slice(0, 300);
+  } catch (e) {
+    return String(element);
   }
 }
 
