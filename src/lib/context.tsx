@@ -4,7 +4,7 @@ export function setGlobalContexts(contexts: Map<symbol, any>) {
   globalContexts = contexts;
 }
 
-type Context<T> = {
+export type Context<T> = {
   Provider: ({ value, children }: { value: T; children: any }) => any;
   contextKey: symbol;
   defaultValue: T;

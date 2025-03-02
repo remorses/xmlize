@@ -102,6 +102,7 @@ export async function renderAsync(
     }
 
     let res = element.type(element.props);
+    setGlobalContexts(ownContext);
 
     if (res instanceof Promise) {
       return res.then((resolved) => {

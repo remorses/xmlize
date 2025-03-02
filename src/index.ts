@@ -17,3 +17,4 @@ export type {
 
 export { renderAsync } from './lib/render-async';
 export { createContext, useContext } from './lib/context';
+export type { Context } from './lib/context';
