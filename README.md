@@ -1,9 +1,6 @@
 # xmlize
 
-Generate xml string from jsx
-
-[![codecov](https://codecov.io/gh/smmoosavi/xmlize/branch/master/graph/badge.svg)](https://codecov.io/gh/smmoosavi/xmlize)
-[![Build Status](https://github.com/smmoosavi/xmlize/actions/workflows/node-ci.yml/badge.svg?branch=main)](https://github.com/smmoosavi/xmlize/actions/workflows/node-ci.yml)
+Generate xml from jsx
 
 ## Install
 
