@@ -25,6 +25,17 @@ expect(xml).toBe(`<test/>`);
 
 ## TypeScript types support
 
+You will need to update your `tsconfig.json` to use xmlize as the jsx runtime:
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "mlxize"
+  }
+}
+```
+
 You need to define which tags are available in JSX with:
 
 ```tsx
@@ -59,17 +70,6 @@ declare global {
         children?: any;
       };
     }
-  }
-}
-```
-
-You will also need to update your `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "mlxize"
   }
 }
 ```
