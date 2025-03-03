@@ -48,6 +48,8 @@ let xml = render(<MyComponent />).end({ headless: true });
 
 ## Async components
 
+Async components are rendered concurrently, meaning if you have 4 components that sleep for 1 second each, renderAsync will return in 1 second only.
+
 ```tsx
 import { renderAsync } from 'xmlize';
 
@@ -57,8 +59,9 @@ async function AsyncComponent(props) {
   return <item data={data}>{props.children}</item>;
 }
 
-function fetchData() {
-  return Promise.resolve('async-data');
+async function fetchData() {
+  await sleep(1000);
+  return 'async-data';
 }
 
 // Usage with renderAsync
