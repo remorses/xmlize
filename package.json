@@ -7,7 +7,7 @@
   ],
   "license": "MIT",
   "type": "module",
-  "typings": "./index.d.ts",
+  "typings": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "exports": {
     ".": {
