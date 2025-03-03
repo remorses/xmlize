@@ -119,7 +119,9 @@ async function fetchData() {
 
 // Usage with renderAsync
 const xml = await renderAsync(<AsyncComponent>content</AsyncComponent>);
-expect(xml).toBe('<item data="async-data">content</item>');
+expect(xml.end({ headless: true })).toBe(
+  '<item data="async-data">content</item>',
+);
 ```
 
 ## Context
