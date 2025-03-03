@@ -23,6 +23,59 @@ let xml = render(<test />).end({ headless: true });
 expect(xml).toBe(`<test/>`);
 ```
 
+## TypeScript types support
+
+You need to define which tags are available in JSX with:
+
+```tsx
+declare global {
+  // if you don't set jsxImportSource to xmlize you will also need to add `namespace React {` here, but you can't override native HTML tags this way.
+  namespace JSX {
+    interface ElementChildrenAttribute {
+      children?: any;
+    }
+
+    interface IntrinsicElements {
+      svg: {
+        width?: string | number;
+        height?: string | number;
+        viewBox?: string;
+        xmlns?: string;
+        version?: string;
+        preserveAspectRatio?: string;
+        children?: any;
+      };
+      rect: {
+        x?: string | number;
+        y?: string | number;
+        width?: string | number;
+        height?: string | number;
+        rx?: string | number;
+        ry?: string | number;
+        fill?: string;
+        stroke?: string;
+        strokeWidth?: string | number;
+        opacity?: string | number;
+        children?: any;
+      };
+    }
+  }
+}
+```
+
+You will also need to update your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "mlxize"
+  }
+}
+```
+
+`xmlize` also works with you don't define `jsxImportSource` but this way it will impossible to override typescript types for already existing HTML tags, this is because typescript will use the React types declarations if you don't pass a custom `jsxImportSource`.
+
 ## API
 
 ### `render(jsx, options): XMLBuilder`
@@ -149,5 +202,3 @@ let xml4 = render(
 ).end({ headless: true });
 expect(xml4).toBe('<root><test/><test/></root>');
 ```
-
-
