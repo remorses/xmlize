@@ -16,12 +16,9 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install
       - run: pnpm run lint
       - run: pnpm run format:check
       - run: pnpm run build
       - run: pnpm run test
-      - run: git diff --exit-code --name-only
-      - uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      

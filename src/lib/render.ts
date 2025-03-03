@@ -25,7 +25,7 @@ export function render(
   return cur;
 }
 
-// this happens when you render a React memo or forwardRef component with jsx-xml
+// this happens when you render a React memo or forwardRef component with xmlx
 export function isReactMemoOrForwardRef(element: any): element is ReactElement {
   return element?.type?.type || element?.type?.render;
 }

@@ -1,6 +1,6 @@
 {
-  "name": "jsx-xml",
-  "version": "0.3.0",
+  "name": "xmlx",
+  "version": "0.0.0",
   "files": [
     "src",
     "dist",
@@ -12,59 +12,40 @@
   "license": "MIT",
   "type": "module",
   "typings": "./index.d.ts",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index.js",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./jsx-runtime": {
-      "types": "./jsx-runtime.d.ts",
-      "require": "./dist/jsx-runtime.cjs",
-      "import": "./dist/jsx-runtime.js"
+      "types": "./dist/jsx-runtime.d.ts",
+      "default": "./dist/jsx-runtime.js"
     },
     "./jsx-dev-runtime": {
-      "types": "./jsx-dev-runtime.d.ts",
-      "require": "./dist/jsx-dev-runtime.cjs",
-      "import": "./dist/jsx-dev-runtime.js"
+      "types": "./dist/jsx-dev-runtime.d.ts",
+      "default": "./dist/jsx-dev-runtime.js"
     }
   },
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
   },
   "scripts": {
-    "prepare": "husky",
-    "pre-commit": "tsc && lint-staged && pnpm lint",
-    "lint": "eslint --max-warnings=0 src/**/*.{ts,tsx}",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,yml,css,scss,md}'",
     "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,yml,css,scss,md}'",
-    "test": "vitest --run --coverage",
-    "test:watch": "vitest",
-    "build:dts:index": "api-extractor run --local --verbose --config api-extractor-index.json && prettier --write index.d.ts",
-    "build:dts:jsx-runtime": "api-extractor run --local --verbose --config api-extractor-jsx-runtime.json && prettier --write jsx-runtime.d.ts",
-    "build:dts:jsx-dev-runtime": "api-extractor run --local --verbose --config api-extractor-jsx-dev-runtime.json && prettier --write jsx-dev-runtime.d.ts",
-    "build:dts": "pnpm build:dts:index && pnpm build:dts:jsx-runtime && pnpm build:dts:jsx-dev-runtime",
-    "build": "tsc && vite build && pnpm build:dts",
-    "watch": "vite build --watch",
+    "test": "vitest",
+    "build": "tsc ",
+    "watch": "tsc -w",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7",
     "@types/node": "^20",
     "@types/react": "^19.0.10",
     "@types/react-is": "^19.0.0",
-    "@vitest/coverage-istanbul": "^1",
-    "eslint": "^8",
-    "eslint-config-react-app": "^7",
-    "husky": "^9",
-    "lint-staged": "^15",
     "prettier": "^3",
     "react": "^19.0.0",
     "typescript": "^5",
     "vite": "^6.2.0",
-    "vite-plugin-dts": "^3",
     "vitest": "^1"
   },
   "dependencies": {

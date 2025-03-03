@@ -1,24 +1,24 @@
-# jsx-xml
+# xmlx
 
 Generate xml string from jsx
 
-[![codecov](https://codecov.io/gh/smmoosavi/jsx-xml/branch/master/graph/badge.svg)](https://codecov.io/gh/smmoosavi/jsx-xml)
-[![Build Status](https://github.com/smmoosavi/jsx-xml/actions/workflows/node-ci.yml/badge.svg?branch=main)](https://github.com/smmoosavi/jsx-xml/actions/workflows/node-ci.yml)
+[![codecov](https://codecov.io/gh/smmoosavi/xmlx/branch/master/graph/badge.svg)](https://codecov.io/gh/smmoosavi/xmlx)
+[![Build Status](https://github.com/smmoosavi/xmlx/actions/workflows/node-ci.yml/badge.svg?branch=main)](https://github.com/smmoosavi/xmlx/actions/workflows/node-ci.yml)
 
 ## Install
 
 ```bash
-npm install jsx-xml
+npm install xmlx
 # or
-yarn add jsx-xml
+yarn add xmlx
 # or
-pnpm add jsx-xml
+pnpm add xmlx
 ```
 
 ## Usage
 
 ```tsx
-import { render } from 'jsx-xml';
+import { render } from 'xmlx';
 import { expect } from 'vitest';
 
 let xml = render(<test />).end({ headless: true });
@@ -40,7 +40,7 @@ The `render` function returns an instance of XMLBuilder. You can call the [end](
 You can define your own components by defining a function that returns a JSX.Element. Component name should start with a capital letter.
 
 ```tsx
-import { render } from 'jsx-xml';
+import { render } from 'xmlx';
 
 function MyComponent(props) {
   return <test>{props.children}</test>;
@@ -54,7 +54,7 @@ let xml = render(<MyComponent />).end({ headless: true });
 ### `CData`
 
 ```tsx
-import { CData } from 'jsx-xml';
+import { CData } from 'xmlx';
 
 const value = 1;
 
@@ -70,7 +70,7 @@ expect(xml).toBe(`<test><![CDATA[some text and 1]]></test>`);
 ### `Comment`
 
 ```tsx
-import { Comment } from 'jsx-xml';
+import { Comment } from 'xmlx';
 
 let xml = render(
   <test>
@@ -84,7 +84,7 @@ expect(xml).toBe(`<test><!--some comment--></test>`);
 ### `Ins`
 
 ```tsx
-import { Ins } from 'jsx-xml';
+import { Ins } from 'xmlx';
 
 let xml = render(
   <test>
@@ -99,7 +99,7 @@ expect(xml).toBe(`<test><?target?><?other value?></test>`);
 ### `Fragment`
 
 ```tsx
-import { Fragment } from 'jsx-xml';
+import { Fragment } from 'xmlx';
 
 let xml = render(
   <root>
@@ -115,7 +115,7 @@ expect(xml).toBe(`<root><test/><test/></root>`);
 
 ## JSX Transformations
 
-The jsx-xml supports multiple jsx transformations:
+The xmlx supports multiple jsx transformations:
 
 - React element
 - automatic jsx transformation
@@ -123,12 +123,12 @@ The jsx-xml supports multiple jsx transformations:
 
 ### React Element
 
-jsx-xml render function accepts any React element as jsx argument. It helps you to use the jsx-xml in React projects without extra config.
+xmlx render function accepts any React element as jsx argument. It helps you to use the xmlx in React projects without extra config.
 
 **Pros:**
 
 - No extra config is required
-- it can be used jsx-xml and React in the same file
+- it can be used xmlx and React in the same file
 
 **Cons:**
 
@@ -150,7 +150,7 @@ let xml2 = render(<test children="attr">child</test>).end({ headless: true });
 console.log(xml2); // <test>child</test>
 ```
 
-- It logs some warnings in the console that do not apply to jsx-xml
+- It logs some warnings in the console that do not apply to xmlx
 
 ```tsx
 const props = { key: '1', other: 'value' };
@@ -161,14 +161,14 @@ const xml = render(<test {...props} />).end({ headless: true });
 
 ### Automatic JSX Transformation
 
-jsx-xml provides automatic jsx transformation. It can be configured in the vite or esbuild config.
+xmlx provides automatic jsx transformation. It can be configured in the vite or esbuild config.
 
 To config the whole files in the project:
 
 ```tsx
 export default defineConfig({
   esbuild: {
-    jsxImportSource: 'jsx-xml',
+    jsxImportSource: 'xmlx',
   },
 });
 ```
@@ -176,7 +176,7 @@ export default defineConfig({
 Or to config a specific file:
 
 ```tsx
-// @jsxImportSource jsx-xml
+// @jsxImportSource xmlx
 ```
 
 **Pros:**
@@ -185,7 +185,7 @@ Or to config a specific file:
 
 **Cons:**
 
-- it can not be used jsx-xml and React in the same file
+- it can not be used xmlx and React in the same file
 - it needs per file config
 - it is not possible to have the `children` attribute
 - order of the `key` attr is not preserved
@@ -200,7 +200,7 @@ console.log(xml); // <test key="3" before="1" ref="2" after="4"/>
 
 ### Classic JSX Transformation
 
-jsx-xml provides classic jsx transformation. It can be configured in the vite or esbuild config.
+xmlx provides classic jsx transformation. It can be configured in the vite or esbuild config.
 
 To config the whole files in the project:
 
@@ -221,7 +221,7 @@ Or to config a specific file:
 // @jsxFrag Fragment
 // @jsx h
 
-import { h, Fragment } from 'jsx-xml';
+import { h, Fragment } from 'xmlx';
 ```
 
 **Pros:**
@@ -244,11 +244,11 @@ console.log(xml); // <test children="attr">child</test>
 
 **Cons:**
 
-- It can not be used jsx-xml and React in the same file
+- It can not be used xmlx and React in the same file
 - It needs per file config
 
 ### How to choose the transformation
 
 - If your project is not a React project, it is better to use the classic jsx transformation.
-- If your project is a React project, it is better to split the jsx-xml and React code into different files and use the classic jsx transformation for jsx-xml files.
+- If your project is a React project, it is better to split the xmlx and React code into different files and use the classic jsx transformation for xmlx files.
 - If your project is a React project, you can use the React element transformation. if you need `key`, `ref` or `children` attribute, you can use the classic jsx transformation per file.
