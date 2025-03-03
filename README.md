@@ -36,6 +36,8 @@ You will need to update your `tsconfig.json` to use xmlize as the jsx runtime:
 }
 ```
 
+> `xmlize` also works with you don't define `jsxImportSource` but this way it will impossible to override typescript types for already existing HTML tags, this is because typescript will use the React types declarations if you don't pass a custom `jsxImportSource`.
+
 You need to define which tags are available in JSX with:
 
 ```tsx
@@ -73,8 +75,6 @@ declare global {
   }
 }
 ```
-
-`xmlize` also works with you don't define `jsxImportSource` but this way it will impossible to override typescript types for already existing HTML tags, this is because typescript will use the React types declarations if you don't pass a custom `jsxImportSource`.
 
 ## API
 
