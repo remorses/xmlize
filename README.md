@@ -46,59 +46,97 @@ function MyComponent(props) {
 let xml = render(<MyComponent />).end({ headless: true });
 ```
 
-### Built-in Components
-
-### `CData`
+## Async components
 
 ```tsx
-import { CData } from 'xmlize';
+import { renderAsync } from 'xmlize';
 
+async function AsyncComponent(props) {
+  // Simulate async operation
+  const data = await fetchData();
+  return <item data={data}>{props.children}</item>;
+}
+
+function fetchData() {
+  return Promise.resolve('async-data');
+}
+
+// Usage with renderAsync
+const xml = await renderAsync(<AsyncComponent>content</AsyncComponent>);
+expect(xml).toBe('<item data="async-data">content</item>');
+```
+
+## Context
+
+You can use context to pass down props just like React, this works both with render and renderAsync.
+
+```tsx
+import { createContext, useContext } from 'xmlize';
+import { render } from 'xmlize';
+import { expect } from 'vitest';
+
+// Create a context
+const ThemeContext = createContext('light');
+
+// Component that uses context
+function ThemedComponent() {
+  const theme = useContext(ThemeContext);
+  return <item theme={theme} />;
+}
+
+// Provider component
+function App() {
+  return (
+    <ThemeContext.Provider value="dark">
+      <ThemedComponent />
+    </ThemeContext.Provider>
+  );
+}
+
+// Usage
+const xml = render(<App />).end({ headless: true });
+expect(xml).toBe('<item theme="dark"/>');
+
+// Default value is used when no provider is found
+const xmlWithDefaultTheme = render(<ThemedComponent />).end({ headless: true });
+expect(xmlWithDefaultTheme).toBe('<item theme="light"/>');
+```
+
+### Built-in Components
+
+```tsx
+import { CData, Comment, Ins, Fragment } from 'xmlize';
+import { render } from 'xmlize';
+import { expect } from 'vitest';
+
+// CData example
 const value = 1;
-
-let xml = render(
+let xml1 = render(
   <test>
     <CData>some text and {value}</CData>
   </test>,
 ).end({ headless: true });
+expect(xml1).toBe('<test><![CDATA[some text and 1]]></test>');
 
-expect(xml).toBe(`<test><![CDATA[some text and 1]]></test>`);
-```
-
-### `Comment`
-
-```tsx
-import { Comment } from 'xmlize';
-
-let xml = render(
+// Comment example
+let xml2 = render(
   <test>
     <Comment>some comment</Comment>
   </test>,
 ).end({ headless: true });
+expect(xml2).toBe('<test><!--some comment--></test>');
 
-expect(xml).toBe(`<test><!--some comment--></test>`);
-```
-
-### `Ins`
-
-```tsx
-import { Ins } from 'xmlize';
-
-let xml = render(
+// Ins example
+let xml3 = render(
   <test>
     <Ins target="target"></Ins>
     <Ins target="other" content="value"></Ins>
   </test>,
 ).end({ headless: true });
+expect(xml3).toBe('<test><?target?><?other value?></test>');
 
-expect(xml).toBe(`<test><?target?><?other value?></test>`);
-```
-
-### `Fragment`
-
-```tsx
-import { Fragment } from 'xmlize';
-
-let xml = render(
+// Fragment example
+let xml4 = render(
   <root>
     <Fragment>
       <test />
@@ -106,146 +144,5 @@ let xml = render(
     </Fragment>
   </root>,
 ).end({ headless: true });
-
-expect(xml).toBe(`<root><test/><test/></root>`);
+expect(xml4).toBe('<root><test/><test/></root>');
 ```
-
-## JSX Transformations
-
-The xmlize supports multiple jsx transformations:
-
-- React element
-- automatic jsx transformation
-- classic jsx transformation
-
-### React Element
-
-xmlize render function accepts any React element as jsx argument. It helps you to use the xmlize in React projects without extra config.
-
-**Pros:**
-
-- No extra config is required
-- it can be used xmlize and React in the same file
-
-**Cons:**
-
-- Order of the `key` and `ref` attrs is not preserved
-
-```tsx
-let xml = render(<test before="1" ref="2" key="3" after="4" />).end({
-  headless: true,
-});
-
-console.log(xml); // <test key="3" ref="2" before="1" after="4"/>
-```
-
-- It is not possible to have the `children` attribute
-
-```tsx
-let xml2 = render(<test children="attr">child</test>).end({ headless: true });
-
-console.log(xml2); // <test>child</test>
-```
-
-- It logs some warnings in the console that do not apply to xmlize
-
-```tsx
-const props = { key: '1', other: 'value' };
-const xml = render(<test {...props} />).end({ headless: true });
-
-// Warning: A props object containing a "key" prop is being spread into JSX:
-```
-
-### Automatic JSX Transformation
-
-xmlize provides automatic jsx transformation. It can be configured in the vite or esbuild config.
-
-To config the whole files in the project:
-
-```tsx
-export default defineConfig({
-  esbuild: {
-    jsxImportSource: 'xmlize',
-  },
-});
-```
-
-Or to config a specific file:
-
-```tsx
-// @jsxImportSource xmlize
-```
-
-**Pros:**
-
-- No unrelated warnings in the console
-
-**Cons:**
-
-- it can not be used xmlize and React in the same file
-- it needs per file config
-- it is not possible to have the `children` attribute
-- order of the `key` attr is not preserved
-
-```tsx
-let xml = render(<test before="1" ref="2" key="3" after="4" />).end({
-  headless: true,
-});
-
-console.log(xml); // <test key="3" before="1" ref="2" after="4"/>
-```
-
-### Classic JSX Transformation
-
-xmlize provides classic jsx transformation. It can be configured in the vite or esbuild config.
-
-To config the whole files in the project:
-
-```tsx
-export default defineConfig({
-  esbuild: {
-    jsx: 'transform',
-    jsxFactory: 'h',
-    jsxFragment: 'Fragment',
-  },
-});
-```
-
-Or to config a specific file:
-
-```tsx
-// @jsxRuntime classic
-// @jsxFrag Fragment
-// @jsx h
-
-import { h, Fragment } from 'xmlize';
-```
-
-**Pros:**
-
-- Preserve the order of the `key` and `ref` attrs
-
-```tsx
-let xml = render(<test before="1" ref="2" key="3" after="4" />).end({
-  headless: true,
-});
-console.log(xml); // <test before="1" ref="2" key="3" after="4"/>
-```
-
-- It is possible to have the `children` attribute
-
-```tsx
-let xml = render(<test children="attr">child</test>).end({ headless: true });
-console.log(xml); // <test children="attr">child</test>
-```
-
-**Cons:**
-
-- It can not be used xmlize and React in the same file
-- It needs per file config
-
-### How to choose the transformation
-
-- If your project is not a React project, it is better to use the classic jsx transformation.
-- If your project is a React project, it is better to split the xmlize and React code into different files and use the classic jsx transformation for xmlize files.
-- If your project is a React project, you can use the React element transformation. if you need `key`, `ref` or `children` attribute, you can use the classic jsx transformation per file.
