@@ -4,11 +4,12 @@ import {
   ClassComponent,
   ForwardRefComponent,
   MemoComponent,
-} from './fixtures/react';
-import { render } from './render';
+} from "./fixtures/react.js";
+import { render } from "./render.js";
 
 describe('jsx', () => {
   test('react jsx memo does not use jsx xml', () => {
+    // @ts-ignore
     const res = <MemoComponent label="test" />;
     expect(res['$$typeof']).toMatchInlineSnapshot(`Symbol(JSXXML)`);
 

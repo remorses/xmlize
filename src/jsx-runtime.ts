@@ -1,7 +1,7 @@
-export { Fragment } from './builtin';
-export { jsx, jsxs } from './lib/runtime';
+export { Fragment } from './builtin.js';
+export { jsx, jsxs } from './lib/runtime.js';
 export type {
   JsxXmlElement,
   JsxXmlComponentElement,
   JsxXmlTagElement,
-} from './lib/types';
+} from './lib/types.js';

@@ -1,8 +1,9 @@
+import React, { forwardRef, memo, Suspense } from 'react';
+
 export function ReactComponent() {
   return <item />;
 }
 
-import React, { forwardRef, memo, Suspense } from 'react';
 
 // Basic component with memo
 export const MemoComponent = memo(function MemoComponent({

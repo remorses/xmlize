@@ -1,13 +1,13 @@
 import { ReactElement } from 'react';
 import { isElement } from 'react-is';
 import { fragment } from 'xmlbuilder2';
-import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
-import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces';
-import { defaultContexts, setGlobalContexts } from './context';
-import { getCurrentElement, withElement } from './elements-stack';
-import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
-import { reactElementToJsxXmlElement } from './react';
-import { JsxXmlElement } from './types';
+import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces.js';
+import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces.js';
+import { defaultContexts, setGlobalContexts } from "./context.js";
+import { getCurrentElement, withElement } from "./elements-stack.js";
+import { isJsxXmlComponentElement, isJsxXmlTagElement } from "./jsx.js";
+import { reactElementToJsxXmlElement } from "./react.js";
+import { JsxXmlElement } from "./types.js";
 
 /**
  *

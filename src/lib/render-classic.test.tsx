@@ -3,7 +3,7 @@
 // @jsx h
 
 import { describe, expect, test } from 'vitest';
-import { CData, Comment, Fragment, Ins, render, h } from '../index';
+import { CData, Comment, Fragment, Ins, render, h } from "../index.js";
 
 declare global {
   namespace JSX {

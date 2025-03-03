@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "outDir": "dist",
+    "rootDir": "src",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": false,

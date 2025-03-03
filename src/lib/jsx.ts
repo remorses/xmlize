@@ -1,4 +1,4 @@
-import { JsxXML, JsxXmlComponentElement, JsxXmlTagElement } from './types';
+import { JsxXML, JsxXmlComponentElement, JsxXmlTagElement } from "./types.js";
 
 export function createJsxXmlTagElement(
   type: string,

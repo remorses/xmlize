@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { joinTextChildren } from './join';
+import { joinTextChildren } from "./join.js";
 
 describe('join text children', () => {
   test('join text children', () => {

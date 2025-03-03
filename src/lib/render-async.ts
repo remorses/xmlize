@@ -1,15 +1,15 @@
 import { ReactElement } from 'react';
 import { isElement } from 'react-is';
 import { fragment } from 'xmlbuilder2';
-import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
-import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces';
-import * as builtin from '../builtin';
-import { createBuiltins } from '../builtin';
-import { defaultContexts, setGlobalContexts } from './context';
-import { isJsxXmlComponentElement, isJsxXmlTagElement } from './jsx';
-import { reactElementToJsxXmlElement } from './react';
-import { isReactMemoOrForwardRef, isXmlBuilder, tryStringify } from './render';
-import { JsxXmlElement } from './types';
+import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces.js';
+import { XMLBuilderCreateOptions } from 'xmlbuilder2/lib/interfaces.js';
+import * as builtin from "../builtin.js";
+import { createBuiltins } from "../builtin.js";
+import { defaultContexts, setGlobalContexts } from "./context.js";
+import { isJsxXmlComponentElement, isJsxXmlTagElement } from "./jsx.js";
+import { reactElementToJsxXmlElement } from "./react.js";
+import { isReactMemoOrForwardRef, isXmlBuilder, tryStringify } from "./render.js";
+import { JsxXmlElement } from "./types.js";
 
 export async function renderAsync(
   element: ReactElement | JsxXmlElement,

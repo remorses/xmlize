@@ -1,10 +1,10 @@
 import { Component, forwardRef } from 'react';
 import { describe, expect, test } from 'vitest';
 import { create } from 'xmlbuilder2';
-import { CData, Comment, Fragment, Ins, render } from '../index';
-import { createContext, useContext } from './context';
-import { renderAsync } from './render-async';
-import { createYieldTracker } from './yield-tracker';
+import { CData, Comment, Fragment, Ins, render } from "../index.js";
+import { createContext, useContext } from "./context.js";
+import { renderAsync } from "./render-async.js";
+import { createYieldTracker } from "./yield-tracker.js";
 
 declare global {
   namespace React {

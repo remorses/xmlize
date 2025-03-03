@@ -1,4 +1,4 @@
-import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
+import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces.js';
 
 export let elementsStack: XMLBuilder[] = [];
 

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
-import { createJsxXmlComponentElement } from './lib/jsx';
-import { joinTextChildren, TextChildren } from './lib/join';
-import { getCurrentElement as defaultGetCurrentElement } from './lib/elements-stack';
+import { createJsxXmlComponentElement } from "./lib/jsx.js";
+import { joinTextChildren, TextChildren } from "./lib/join.js";
+import { getCurrentElement as defaultGetCurrentElement } from "./lib/elements-stack.js";
 
 /**
  * @public

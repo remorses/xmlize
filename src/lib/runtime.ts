@@ -1,4 +1,4 @@
-import { createJsxXmlElement } from './jsx';
+import { createJsxXmlElement } from "./jsx.js";
 
 /**
  *
