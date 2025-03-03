@@ -149,3 +149,5 @@ let xml4 = render(
 ).end({ headless: true });
 expect(xml4).toBe('<root><test/><test/></root>');
 ```
+
+
